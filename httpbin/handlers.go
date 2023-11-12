@@ -315,7 +315,12 @@ func (h *HTTPBin) Unstable(w http.ResponseWriter, r *http.Request) {
 // ResponseHeaders responds with a map of header values
 func (h *HTTPBin) ResponseHeaders(w http.ResponseWriter, r *http.Request) {
 	args := r.URL.Query()
+
 	SetResponseHeaders(w, args)
+	if contentType := w.Header().Get("Content-Type"); contentType == "" {
+		w.Header().Set("Content-Type", jsonContentType)
+	}
+
 	mustMarshalJSON(w, args)
 }
 
@@ -324,9 +329,6 @@ func SetResponseHeaders(w http.ResponseWriter, args url.Values) {
 		for _, v := range vs {
 			w.Header().Add(k, v)
 		}
-	}
-	if contentType := w.Header().Get("Content-Type"); contentType == "" {
-		w.Header().Set("Content-Type", jsonContentType)
 	}
 }
 
