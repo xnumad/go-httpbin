@@ -1029,7 +1029,7 @@ func (h *HTTPBin) File(w http.ResponseWriter, r *http.Request) {
 // doFile responds with a specific kind of image, if there is an image asset
 // of the given kind.
 func doFile(w http.ResponseWriter, kind string) {
-	img, err := staticAsset("file." + kind)
+	file, err := staticAsset("file." + kind)
 	if err != nil {
 		writeError(w, http.StatusNotFound, nil)
 		return
@@ -1047,7 +1047,7 @@ func doFile(w http.ResponseWriter, kind string) {
 		writeError(w, http.StatusInternalServerError /*TODO better error code*/, nil)
 		return
 	}
-	writeResponse(w, http.StatusOK, contentType, img)
+	writeResponse(w, http.StatusOK, contentType, file)
 }
 
 // XML responds with an XML document
