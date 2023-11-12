@@ -145,6 +145,10 @@ func (h *HTTPBin) Handler() http.Handler {
 
 	mux.HandleFunc("/image", h.ImageAccept)
 	mux.HandleFunc("/image/", h.Image)
+
+	mux.HandleFunc("/file", h.FileAccept)
+	mux.HandleFunc("/file/", h.File)
+
 	mux.HandleFunc("/xml", h.XML)
 	mux.HandleFunc("/json", h.JSON)
 

@@ -166,6 +166,7 @@ var (
 			"Location": "/redirect/1",
 		},
 	}
+	//TODO (Image, File) This is confusing me:
 	statusNotAcceptableBody = []byte(`{
   "message": "Client did not request a supported media type",
   "accept": [
@@ -983,6 +984,60 @@ func doImage(w http.ResponseWriter, kind string) {
 	contentType := "image/" + kind
 	if kind == "svg" {
 		contentType = "image/svg+xml"
+	}
+	writeResponse(w, http.StatusOK, contentType, img)
+}
+
+//TODO File and Image are very similar, maybe refactor
+//In fact, Image is just a subset.
+
+// FileAccept responds with an appropriate file based on the Accept header
+func (h *HTTPBin) FileAccept(w http.ResponseWriter, r *http.Request) {
+	accept := r.Header.Get("Accept")
+	switch {
+	case accept == "":
+		fallthrough // default to text/plain
+	case strings.Contains(accept, "text/*"):
+		fallthrough // default to text/plain
+	case strings.Contains(accept, "text/plain"):
+		doFile(w, "txt")
+	case strings.Contains(accept, "application/pdf"):
+		doFile(w, "pdf")
+	default:
+		writeError(w, http.StatusUnsupportedMediaType, nil) //TODO appropriate response status here?
+	}
+}
+
+// File responds with a file of a specific kind, from /file/<kind>
+func (h *HTTPBin) File(w http.ResponseWriter, r *http.Request) {
+	parts := strings.Split(r.URL.Path, "/")
+	if len(parts) != 3 {
+		writeError(w, http.StatusNotFound, nil)
+		return
+	}
+	doFile(w, parts[2])
+}
+
+// doFile responds with a specific kind of image, if there is an image asset
+// of the given kind.
+func doFile(w http.ResponseWriter, kind string) {
+	img, err := staticAsset("file." + kind)
+	if err != nil {
+		writeError(w, http.StatusNotFound, nil)
+		return
+	}
+	//TODO (FileAccept, doFile):
+	//about association of file extension and Media Types (".pdf" = "application/pdf")
+	//don't re-invent the wheel, re-use some existing associations list.
+	//intermediate step: store in a single place (https://stackoverflow.com/a/76068137)
+	contentType := ""
+	if kind == "txt" {
+		contentType = "text/plain"
+	} else if kind == "pdf" {
+		contentType = "application/pdf"
+	} else {
+		writeError(w, http.StatusInternalServerError /*TODO better error code*/, nil)
+		return
 	}
 	writeResponse(w, http.StatusOK, contentType, img)
 }
