@@ -997,6 +997,8 @@ func doImage(w http.ResponseWriter, kind string) {
 
 // FileAccept responds with an appropriate file based on the Accept header
 func (h *HTTPBin) FileAccept(w http.ResponseWriter, r *http.Request) {
+	SetResponseHeaders(w, r.URL.Query())
+
 	accept := r.Header.Get("Accept")
 	switch {
 	case accept == "":
@@ -1014,6 +1016,8 @@ func (h *HTTPBin) FileAccept(w http.ResponseWriter, r *http.Request) {
 
 // File responds with a file of a specific kind, from /file/<kind>
 func (h *HTTPBin) File(w http.ResponseWriter, r *http.Request) {
+	SetResponseHeaders(w, r.URL.Query())
+
 	parts := strings.Split(r.URL.Path, "/")
 	if len(parts) != 3 {
 		writeError(w, http.StatusNotFound, nil)
