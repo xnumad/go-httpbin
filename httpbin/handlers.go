@@ -1041,7 +1041,7 @@ func (h *HTTPBin) File(w http.ResponseWriter, r *http.Request) {
 	SetResponseHeaders(w, r.URL.Query())
 
 	parts := strings.Split(r.URL.Path, "/")
-	if len(parts) != 3 {
+	if len(parts) < 3 { //allow custom file names through longer path
 		writeError(w, http.StatusNotFound, nil)
 		return
 	}
