@@ -1022,6 +1022,7 @@ func (h *HTTPBin) FileAccept(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusUnsupportedMediaType, nil) //TODO appropriate response status here?
 		return
 	}
+
 	if contentTypeOverride != "" {
 		contentType = contentTypeOverride
 	}
