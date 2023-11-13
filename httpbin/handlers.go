@@ -1000,20 +1000,39 @@ func doImage(w http.ResponseWriter, kind string) {
 // FileAccept responds with an appropriate file based on the Accept header
 func (h *HTTPBin) FileAccept(w http.ResponseWriter, r *http.Request) {
 	SetResponseHeaders(w, r.URL.Query())
+	contentTypeOverride := r.URL.Query().Get("Content-Type") //optional //TODO make case insensitive
 
 	accept := r.Header.Get("Accept")
+
+	sendFile := false
+	contentType := ""
+	kind := ""
+
 	switch {
 	case accept == "":
 		fallthrough // default to text/plain
 	case strings.Contains(accept, "text/*"):
 		fallthrough // default to text/plain
 	case strings.Contains(accept, "text/plain"):
-		doFile(w, "txt")
+		contentType = "text/plain"
+		kind = "txt"
+		sendFile = true
 	case strings.Contains(accept, "application/pdf"):
-		doFile(w, "pdf")
+		contentType = "application/pdf"
+		kind = "pdf"
+		sendFile = true
 	default:
 		writeError(w, http.StatusUnsupportedMediaType, nil) //TODO appropriate response status here?
 	}
+
+	if !sendFile {
+		return
+	}
+	if contentTypeOverride != "" {
+		contentType = contentTypeOverride
+	}
+	doFile(w, kind, contentType)
+
 }
 
 // File responds with a file of a specific kind, from /file/<kind>
@@ -1025,12 +1044,14 @@ func (h *HTTPBin) File(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusNotFound, nil)
 		return
 	}
-	doFile(w, parts[2])
+
+	contentTypeOverride := r.URL.Query().Get("Content-Type") //optional //TODO make case insensitive
+	doFile(w, parts[2], contentTypeOverride)
 }
 
 // doFile responds with a specific kind of image, if there is an image asset
 // of the given kind.
-func doFile(w http.ResponseWriter, kind string) {
+func doFile(w http.ResponseWriter, kind string, contentTypeOverride string) {
 	file, err := staticAsset("file." + kind)
 	if err != nil {
 		writeError(w, http.StatusNotFound, nil)
@@ -1040,15 +1061,24 @@ func doFile(w http.ResponseWriter, kind string) {
 	//about association of file extension and Media Types (".pdf" = "application/pdf")
 	//don't re-invent the wheel, re-use some existing associations list.
 	//intermediate step: store in a single place (https://stackoverflow.com/a/76068137)
+
 	contentType := ""
-	if kind == "txt" {
-		contentType = "text/plain"
-	} else if kind == "pdf" {
-		contentType = "application/pdf"
+	if contentTypeOverride == "" {
+		determinedContentType := ""
+		if kind == "txt" {
+			determinedContentType = "text/plain"
+		} else if kind == "pdf" {
+			determinedContentType = "application/pdf"
+		} else {
+			writeError(w, http.StatusInternalServerError /*TODO better error code*/, nil)
+			return
+		}
+
+		contentType = determinedContentType
 	} else {
-		writeError(w, http.StatusInternalServerError /*TODO better error code*/, nil)
-		return
+		contentType = contentTypeOverride
 	}
+
 	writeResponse(w, http.StatusOK, contentType, file)
 }
 
