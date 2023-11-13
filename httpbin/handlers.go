@@ -1018,6 +1018,12 @@ func (h *HTTPBin) FileAccept(w http.ResponseWriter, r *http.Request) {
 	case strings.Contains(accept, "application/pdf"):
 		contentType = "application/pdf"
 		kind = "pdf"
+	case strings.Contains(accept, "application/xml"):
+		contentType = "application/xml"
+		kind = "xml"
+	case strings.Contains(accept, "text/xml"):
+		contentType = "text/xml"
+		kind = "xml"
 	default:
 		writeError(w, http.StatusUnsupportedMediaType, nil) //TODO appropriate response status here?
 		return
@@ -1064,6 +1070,8 @@ func doFile(w http.ResponseWriter, kind string, contentTypeOverride string) {
 			determinedContentType = "text/plain"
 		} else if kind == "pdf" {
 			determinedContentType = "application/pdf"
+		} else if kind == "xml" {
+			determinedContentType = "application/xml"
 		} else {
 			writeError(w, http.StatusInternalServerError /*TODO better error code*/, nil)
 			return
