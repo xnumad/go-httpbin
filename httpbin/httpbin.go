@@ -146,6 +146,8 @@ func (h *HTTPBin) Handler() http.Handler {
 	mux.HandleFunc("/image", h.ImageAccept)
 	mux.HandleFunc("/image/", h.Image)
 
+	//TODO write tests
+	//TODO document combination with response-headers
 	mux.HandleFunc("/file", h.FileAccept)
 	mux.HandleFunc("/file/", h.File)
 
