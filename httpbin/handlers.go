@@ -1004,7 +1004,6 @@ func (h *HTTPBin) FileAccept(w http.ResponseWriter, r *http.Request) {
 
 	accept := r.Header.Get("Accept")
 
-	sendFile := false
 	contentType := ""
 	kind := ""
 
@@ -1016,16 +1015,11 @@ func (h *HTTPBin) FileAccept(w http.ResponseWriter, r *http.Request) {
 	case strings.Contains(accept, "text/plain"):
 		contentType = "text/plain"
 		kind = "txt"
-		sendFile = true
 	case strings.Contains(accept, "application/pdf"):
 		contentType = "application/pdf"
 		kind = "pdf"
-		sendFile = true
 	default:
 		writeError(w, http.StatusUnsupportedMediaType, nil) //TODO appropriate response status here?
-	}
-
-	if !sendFile {
 		return
 	}
 	if contentTypeOverride != "" {
